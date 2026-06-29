@@ -1,0 +1,11 @@
+.DS_Store
+node_modules
+*.log
+*.local
+.env
+.env.*
+!.env.example
+dist
+.worktrees
+worktrees
+*.tgz
