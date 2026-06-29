@@ -6,6 +6,8 @@
   "scripts": {
     "build": "node scripts/build-all.mjs",
     "dev": "pnpm --filter @arim/json-schema-editor dev",
+    "docs:dev": "pnpm --filter @arim/docs dev",
+    "docs:build": "pnpm --filter @arim/docs build",
     "lint": "eslint ."
   },
   "devDependencies": {
