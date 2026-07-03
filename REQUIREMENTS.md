@@ -13,13 +13,13 @@
 - 使用者可以通过 npm 单独安装某一个或某几个组件，例如：
 
   ```bash
-  npm install @arim/user-profile-card @arim/order-form
+  npm install @cisri/user-profile-card @cisri/order-form
   ```
 
   而不必安装整个库：
 
   ```bash
-  npm install @arim/ui-components
+  npm install @cisri/ui-components
   ```
 
 - 每个组件包体积最小化，不重复打包底层依赖（Radix UI、tailwind-merge、class-variance-authority、clsx、lucide-react 等）。
@@ -65,7 +65,7 @@
 
 - 采用 Monorepo 结构，所有组件源码存放在同一仓库，统一构建、统一版本策略。
 - 每个组件对应一个独立的 npm 包（sub-package），发布到 npm 后拥有独立的包名、版本、依赖声明。
-- 提供一个可选的 "全量包"（例如 `@arim/ui`），内部仅做 re-export，用于需要一次性安装全部组件的使用者。
+- 提供一个可选的 "全量包"（例如 `@cisri/ui`），内部仅做 re-export，用于需要一次性安装全部组件的使用者。
 
 ### 2.2 目录结构
 
@@ -129,11 +129,11 @@
 
 ### 2.3 包命名规范
 
-- Scope：`@arim`（由发布者最终确定，需求文档中保留占位 `@arim`）。
-- 单个组件包：`@arim/<kebab-case-business-component-name>`。
-  - 例如：`@arim/user-profile-card`、`@arim/order-form`、`@arim/data-table`。
-- 全量包：`@arim/ui` 或 `@arim/ui-components`。
-- 公共工具包：`@arim/core`（仅包含 `cn`、`composeRefs` 等纯工具函数）。
+- Scope：`@cisri`（由发布者最终确定，需求文档中保留占位 `@cisri`）。
+- 单个组件包：`@cisri/<kebab-case-business-component-name>`。
+  - 例如：`@cisri/user-profile-card`、`@cisri/order-form`、`@cisri/data-table`。
+- 全量包：`@cisri/ui` 或 `@cisri/ui-components`。
+- 公共工具包：`@cisri/core`（仅包含 `cn`、`composeRefs` 等纯工具函数）。
 
 ---
 
@@ -163,11 +163,11 @@ packages/<business-component>/
 
 ### 3.2 package.json 模板（单个业务组件包）
 
-以下以 `@arim/user-profile-card` 为例，必须满足字段和策略：
+以下以 `@cisri/user-profile-card` 为例，必须满足字段和策略：
 
 ```json
 {
-  "name": "@arim/user-profile-card",
+  "name": "@cisri/user-profile-card",
   "version": "1.0.0",
   "description": "User profile card business component based on shadcn/ui",
   "type": "module",
@@ -188,7 +188,7 @@ packages/<business-component>/
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@arim/core": "workspace:*"
+    "@cisri/core": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
@@ -219,7 +219,7 @@ packages/<business-component>/
 
 **约束说明：**
 
-- `dependencies` 只能依赖本仓库内的 `@arim/core`，不得依赖任何 Radix UI、Tailwind 工具等外部运行时库。
+- `dependencies` 只能依赖本仓库内的 `@cisri/core`，不得依赖任何 Radix UI、Tailwind 工具等外部运行时库。
 - `peerDependencies` 中必须列出该业务组件实际 import 的所有底层库（包括其 `src/ui/` 内联原始组件所依赖的 Radix UI 包）。
 - 未使用的底层库不得出现在 `peerDependencies` 中（每个业务组件包只声明自己需要的）。
 - `peerDependenciesMeta` 中所有底层依赖均标记为 `optional`，避免使用者安装未使用组件时被迫安装对应底层库。
@@ -236,7 +236,7 @@ import { Card, CardContent, CardHeader } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { cn } from "@arim/core";
+import { cn } from "@cisri/core";
 
 export interface UserProfileCardProps {
   name: string;
@@ -287,7 +287,7 @@ export function UserProfileCard({
 ```tsx
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
-import { cn } from "@arim/core";
+import { cn } from "@cisri/core";
 
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
@@ -308,7 +308,7 @@ export { Avatar, AvatarImage, AvatarFallback };
 
 **强制规则：**
 
-- 工具函数 `cn` 必须从 `@arim/core` import；禁止在每个业务组件包内重复定义 `cn`。
+- 工具函数 `cn` 必须从 `@cisri/core` import；禁止在每个业务组件包内重复定义 `cn`。
 - 业务组件内部引用内联原始组件时，使用相对路径 `./ui/xxx`，例如 `import { Button } from "./ui/button"`。
 - 内联原始组件内部引用 Radix UI 等底层库时，必须从 npm 包名 import，例如 `import * as AvatarPrimitive from "@radix-ui/react-avatar"`。
 - 禁止 import 其他业务组件包的源码，业务组件包之间保持独立（组合组件除外，见 3.4）。
@@ -321,8 +321,8 @@ export { Avatar, AvatarImage, AvatarFallback };
 - 优先在 `packages/order-detail-panel/src/order-detail-panel.tsx` 中直接 import 其他独立业务组件包：
 
   ```tsx
-  import { UserProfileCard } from "@arim/user-profile-card";
-  import { PaymentStatusBadge } from "@arim/payment-status-badge";
+  import { UserProfileCard } from "@cisri/user-profile-card";
+  import { PaymentStatusBadge } from "@cisri/payment-status-badge";
   ```
 
 - 此时 `packages/order-detail-panel/package.json` 的 `dependencies` 必须声明：
@@ -330,16 +330,16 @@ export { Avatar, AvatarImage, AvatarFallback };
   ```json
   {
     "dependencies": {
-      "@arim/core": "workspace:*",
-      "@arim/user-profile-card": "workspace:*",
-      "@arim/payment-status-badge": "workspace:*"
+      "@cisri/core": "workspace:*",
+      "@cisri/user-profile-card": "workspace:*",
+      "@cisri/payment-status-badge": "workspace:*"
     }
   }
   ```
 
 - 发布前，workspace 协议必须被替换为实际版本号（见 6.3）。
 
-**注意：** 组合业务组件不应直接依赖其他业务组件包内部的 `src/ui/` 原始组件；如果需要复用原始组件，应在当前包内部自行内联一份，或抽象到 `@arim/core`（若确实跨包复用）。
+**注意：** 组合业务组件不应直接依赖其他业务组件包内部的 `src/ui/` 原始组件；如果需要复用原始组件，应在当前包内部自行内联一份，或抽象到 `@cisri/core`（若确实跨包复用）。
 
 ### 3.5 样式可覆盖性与使用者主题
 
@@ -412,12 +412,12 @@ export interface UserProfileCardProps {
 
 ---
 
-## 4. 公共工具包 `@arim/core`
+## 4. 公共工具包 `@cisri/core`
 
 ### 4.1 职责
 
 - 存放所有组件共享的纯工具函数和类型。
-- 每个组件包必须依赖 `@arim/core`，但 `@arim/core` 自身不依赖任何组件包。
+- 每个组件包必须依赖 `@cisri/core`，但 `@cisri/core` 自身不依赖任何组件包。
 
 ### 4.2 必须包含的内容
 
@@ -440,7 +440,7 @@ export { cn } from "./utils";
 
 ```json
 {
-  "name": "@arim/core",
+  "name": "@cisri/core",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -577,7 +577,7 @@ packages/user-profile-card/dist/
 
 - 采用 **独立版本模式（independent versioning）**：每个组件包拥有独立版本号。
 - 当某个组件更新时，只提升该组件包的版本，不影响其他组件包。
-- 全量包 `@arim/ui` 的版本单独维护，其 `dependencies` 中记录各组件的最低兼容版本。
+- 全量包 `@cisri/ui` 的版本单独维护，其 `dependencies` 中记录各组件的最低兼容版本。
 
 ### 6.2 发布前检查清单
 
@@ -599,12 +599,12 @@ packages/user-profile-card/dist/
 ```json
 // 开发时
 "dependencies": {
-  "@arim/core": "workspace:*"
+  "@cisri/core": "workspace:*"
 }
 
 // 发布前自动替换为
 "dependencies": {
-  "@arim/core": "^1.0.0"
+  "@cisri/core": "^1.0.0"
 }
 ```
 
@@ -615,7 +615,7 @@ packages/user-profile-card/dist/
 `scripts/publish-all.mjs` 必须支持：
 
 - 仅发布有变动的包（通过对比 git tag 或本地版本与 registry 版本）。
-- 按依赖拓扑顺序发布（先 `@arim/core`，再依赖它的组件包）。
+- 按依赖拓扑顺序发布（先 `@cisri/core`，再依赖它的组件包）。
 - 校验每个包的 `peerDependencies` 是否完整。
 - 提供 `--dry-run` 模式，仅打印待发布包不实际发布。
 
@@ -626,7 +626,7 @@ packages/user-profile-card/dist/
 ### 7.1 单独安装某个业务组件
 
 ```bash
-npm install @arim/user-profile-card
+npm install @cisri/user-profile-card
 ```
 
 npm 会提示缺少的 peer dependencies，使用者按需安装：
@@ -638,20 +638,20 @@ npm install @radix-ui/react-avatar @radix-ui/react-slot class-variance-authority
 ### 7.2 同时安装多个业务组件
 
 ```bash
-npm install @arim/user-profile-card @arim/order-form @arim/data-table
+npm install @cisri/user-profile-card @cisri/order-form @cisri/data-table
 ```
 
 ### 7.3 全量安装（可选）
 
 ```bash
-npm install @arim/ui
+npm install @cisri/ui
 ```
 
-`@arim/ui` 本身依赖所有组件包，因此会拉取全部组件。
+`@cisri/ui` 本身依赖所有组件包，因此会拉取全部组件。
 
 ### 7.4 对使用者的要求（必须在 README 中明确）
 
-- 项目必须已配置 Tailwind CSS，并且 `content` 路径包含 `node_modules/@arim/*/dist/**/*.{js,cjs}`，确保组件类名被扫描。
+- 项目必须已配置 Tailwind CSS，并且 `content` 路径包含 `node_modules/@cisri/*/dist/**/*.{js,cjs}`，确保组件类名被扫描。
 - 项目必须已引入 shadcn/ui 的 CSS 变量定义（如 `:root { --background: ... }`）。
 - 禁止在安装本库时使用 `--legacy-peer-deps`，除非使用者明确了解多版本 Radix 共存的风险。
 
@@ -686,7 +686,7 @@ CI 必须至少测试以下组合：
     try {
       const ctx = DialogPrimitive.useDialogContext?.();
       if (!ctx) {
-        console.warn("[@arim/order-form / DialogPrimitive] DialogPrimitive context not found. ...");
+        console.warn("[@cisri/order-form / DialogPrimitive] DialogPrimitive context not found. ...");
       }
     } catch {}
   }
@@ -704,14 +704,14 @@ CI 必须至少测试以下组合：
 ### 9.2 README 模板（以 user-profile-card 为例）
 
 ```markdown
-# @arim/user-profile-card
+# @cisri/user-profile-card
 
 基于 shadcn/ui 的用户资料卡业务组件。
 
 ## 安装
 
 ```bash
-npm install @arim/user-profile-card
+npm install @cisri/user-profile-card
 ```
 
 ## Peer Dependencies
@@ -725,7 +725,7 @@ npm install react react-dom @radix-ui/react-avatar @radix-ui/react-slot class-va
 ## 使用
 
 ```tsx
-import { UserProfileCard } from "@arim/user-profile-card";
+import { UserProfileCard } from "@cisri/user-profile-card";
 
 export default function App() {
   return (
@@ -745,7 +745,7 @@ export default function App() {
 
 ```ts
 content: [
-  "./node_modules/@arim/user-profile-card/dist/**/*.{js,cjs}",
+  "./node_modules/@cisri/user-profile-card/dist/**/*.{js,cjs}",
 ];
 ```
 
@@ -793,7 +793,7 @@ content: [
    - 提供 Props 调节面板（可选但推荐），允许切换 `variant`、`size`、`status` 等常见属性。
    - **必须提供主题覆盖示例**：展示同一组件在默认主题、深色模式、自定义品牌色三种外观下的效果，证明使用者可以覆盖默认视觉风格。
 2. **安装命令**
-   - 明确显示 `npm install @arim/<component>`。
+   - 明确显示 `npm install @cisri/<component>`。
    - 列出必须手动安装的 peer dependencies。
 3. **使用示例代码**
    - 可直接复制的 TSX 示例。
@@ -812,7 +812,7 @@ content: [
 - 演示组件直接 import 本地 workspace 中的业务组件包，例如：
 
   ```tsx
-  import { UserProfileCard } from "@arim/user-profile-card";
+  import { UserProfileCard } from "@cisri/user-profile-card";
   ```
 
 - 站点本身**不发布到 npm**，仅作为 GitHub Pages / Vercel / 内部静态站点部署。
@@ -855,7 +855,7 @@ content: [
 | 风险 | 影响 | 缓解方案 |
 | ------ | ------ | ---------- |
 | 多版本 Radix UI 共存导致 Context 断裂 | 高 | peerDependencies 标记为 optional 但给出明确警告；文档中禁止 `--legacy-peer-deps` 滥用；CI 测试最低/最高版本矩阵。 |
-| 使用者未配置 Tailwind content 路径 | 高 | 每个组件 README 明确列出需要添加的 content 路径；提供一次性全局配置 `node_modules/@arim/*/dist/**/*.{js,cjs}`。 |
+| 使用者未配置 Tailwind content 路径 | 高 | 每个组件 README 明确列出需要添加的 content 路径；提供一次性全局配置 `node_modules/@cisri/*/dist/**/*.{js,cjs}`。 |
 | 使用者缺少 shadcn CSS 变量 | 中 | 文档要求使用者复制 shadcn 的 `globals.css` 变量定义；全量包 README 提供完整 CSS 变量片段。 |
 | workspace 依赖未替换导致发布失败 | 高 | 发布脚本自动替换 `workspace:*`；发布前执行 `npm pack --dry-run` 校验。 |
 | 组件包 peerDependencies 声明不完整 | 中 | `scripts/sync-peer-deps.mjs` 扫描源码 import 并与 package.json 对比，CI 中强制检查。 |
@@ -867,9 +867,9 @@ content: [
 
 ### 12.1 功能验收
 
-- [ ] 使用者可以仅安装 `@arim/user-profile-card` 并在 React 项目中成功渲染 UserProfileCard。
-- [ ] 使用者可以仅安装 `@arim/order-form` 并在 React 项目中成功渲染 OrderForm。
-- [ ] 同时安装 `@arim/user-profile-card` 和 `@arim/order-form` 时，`@arim/core` 只被安装一次，不存在重复打包。
+- [ ] 使用者可以仅安装 `@cisri/user-profile-card` 并在 React 项目中成功渲染 UserProfileCard。
+- [ ] 使用者可以仅安装 `@cisri/order-form` 并在 React 项目中成功渲染 OrderForm。
+- [ ] 同时安装 `@cisri/user-profile-card` 和 `@cisri/order-form` 时，`@cisri/core` 只被安装一次，不存在重复打包。
 - [ ] 每个业务组件包的产物 `dist/` 中不包含 Radix UI、tailwind-merge、clsx、class-variance-authority 的代码。
 - [ ] 使用者可以通过传入 `className` 覆盖业务组件的默认视觉样式。
 - [ ] 使用者可以通过重新定义 shadcn CSS 变量（如 `--primary`、`--card`）改变所有业务组件的主题风格。

@@ -1,11 +1,11 @@
-# @arim/json-schema-editor
+# @cisri/json-schema-editor
 
 A JSON Schema editor business component based on shadcn/ui.
 
 ## 安装
 
 ```bash
-npm install @arim/json-schema-editor
+npm install @cisri/json-schema-editor
 ```
 
 ## Peer Dependencies
@@ -13,14 +13,14 @@ npm install @arim/json-schema-editor
 本组件依赖以下库，请确保你的项目已安装：
 
 ```bash
-npm install react react-dom @radix-ui/react-collapsible @radix-ui/react-label @radix-ui/react-select @radix-ui/react-slot @radix-ui/react-switch class-variance-authority clsx lucide-react tailwind-merge
+npm install react react-dom @radix-ui/react-checkbox @radix-ui/react-select @radix-ui/react-slot class-variance-authority clsx lucide-react tailwind-merge
 ```
 
 ## 使用
 
 ```tsx
 import { useState } from 'react';
-import { JsonSchemaEditor } from '@arim/json-schema-editor';
+import { JsonSchemaEditor } from '@cisri/json-schema-editor';
 
 export default function App() {
   const [schema, setSchema] = useState({
@@ -43,15 +43,15 @@ export default function App() {
 
 ```ts
 content: [
-  './node_modules/@arim/json-schema-editor/dist/**/*.{js,cjs}',
+  './node_modules/@cisri/json-schema-editor/dist/**/*.{js,cjs}',
 ];
 ```
 
-如果同时使用多个 `@arim/*` 组件，可以使用通配符：
+如果同时使用多个 `@cisri/*` 组件，可以使用通配符：
 
 ```ts
 content: [
-  './node_modules/@arim/*/dist/**/*.{js,cjs}',
+  './node_modules/@cisri/*/dist/**/*.{js,cjs}',
 ];
 ```
 

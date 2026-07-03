@@ -1,10 +1,10 @@
-# @arim/ui
+# @cisri/ui
 
 基于 shadcn/ui 的 React 业务组件库。每个组件可独立安装，底层依赖（Radix UI、tailwind-merge 等）通过 `peerDependencies` 复用使用者项目中的实例。
 
 ## 特性
 
-- 📦 **按需安装**：只安装你需要的业务组件，例如 `@arim/json-schema-editor`。
+- 📦 **按需安装**：只安装你需要的业务组件，例如 `@cisri/json-schema-editor`。
 - 🎨 **完全可覆盖样式**：组件使用 CSS 变量（如 `bg-primary`、`text-foreground`），使用者可通过 Tailwind 配置和 `:root` 变量完全控制视觉风格。
 - 🔌 **Peer Dependencies 模式**：不将 Radix UI 等底层库打包进产物，避免版本冲突。
 - 📚 **演示 + 文档融合站点**：每个组件配有实时 Demo 和安装/使用说明（开发中）。
@@ -12,7 +12,7 @@
 ## 安装示例
 
 ```bash
-npm install @arim/json-schema-editor
+npm install @cisri/json-schema-editor
 ```
 
 ## 目录结构
@@ -42,7 +42,7 @@ pnpm build
 
 ```ts
 content: [
-  './node_modules/@arim/*/dist/**/*.{js,cjs}',
+  './node_modules/@cisri/*/dist/**/*.{js,cjs}',
 ];
 ```
 

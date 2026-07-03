@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { JsonSchemaEditor, JsonSchema } from '@arim/json-schema-editor';
+import { JsonSchemaEditor, JsonSchema } from '@cisri/json-schema-editor';
 
 const initialSchema: JsonSchema = {
   type: 'object' as const,

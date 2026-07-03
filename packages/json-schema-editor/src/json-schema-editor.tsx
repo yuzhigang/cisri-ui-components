@@ -18,8 +18,8 @@ import {
   TableRow,
 } from './ui/table';
 import { Textarea } from './ui/textarea';
-import { cn } from '@arim/core';
-import { ChevronDown, Minus, Plus, Trash2 } from 'lucide-react';
+import { cn } from '@cisri/core';
+import { ChevronDown, Minus, Plus, Redo2, Trash2, Undo2 } from 'lucide-react';
 
 export type JsonSchemaType =
   | 'object'
@@ -55,11 +55,11 @@ interface SchemaField {
   schema: JsonSchema;
   children: SchemaField[];
   expanded: boolean;
+  isArrayItem?: boolean;
 }
 
 type SchemaAction =
   | { type: 'update'; id: string; patch: Partial<Pick<SchemaField, 'name' | 'type' | 'required' | 'description'>> }
-  | { type: 'addChild'; id: string }
   | { type: 'addSibling'; id: string }
   | { type: 'delete'; id: string }
   | { type: 'toggleExpand'; id: string };
@@ -81,10 +81,10 @@ function generateId(): string {
 
 function defaultChildrenForType(type: JsonSchemaType): SchemaField[] {
   if (type === 'object') {
-    return [buildField('字段1', { type: 'string' }, new Set())];
+    return [buildField('field1', { type: 'string' }, new Set())];
   }
   if (type === 'array') {
-    return [buildField('元素', { type: 'string' }, new Set())];
+    return [buildField('ITEMS', { type: 'string' }, new Set(), true)];
   }
   return [];
 }
@@ -92,7 +92,8 @@ function defaultChildrenForType(type: JsonSchemaType): SchemaField[] {
 function buildField(
   name: string,
   schema: JsonSchema,
-  requiredSet: Set<string>
+  requiredSet: Set<string>,
+  isArrayItem = false
 ): SchemaField {
   const type = schema.type ?? 'object';
   const children: SchemaField[] = [];
@@ -103,7 +104,7 @@ function buildField(
       children.push(buildField(childName, childSchema, childRequired));
     }
   } else if (type === 'array' && schema.items) {
-    children.push(buildField('元素', schema.items, new Set()));
+    children.push(buildField('ITEMS', schema.items, new Set(), true));
   }
 
   return {
@@ -115,6 +116,7 @@ function buildField(
     schema,
     children,
     expanded: true,
+    isArrayItem,
   };
 }
 
@@ -127,6 +129,43 @@ function schemaToFields(schema: JsonSchema): SchemaField[] {
   return Object.entries(schema.properties).map(([name, childSchema]) =>
     buildField(name, childSchema, required)
   );
+}
+
+function buildEmptyField(): SchemaField {
+  return buildField('', { type: 'string' }, new Set());
+}
+
+function ensureAtLeastOneField(fields: SchemaField[]): SchemaField[] {
+  return fields.length > 0 ? fields : [buildEmptyField()];
+}
+
+function generateSampleData(schema: JsonSchema): unknown {
+  switch (schema.type) {
+    case 'string':
+      return 'string';
+    case 'number':
+    case 'integer':
+      return 0;
+    case 'boolean':
+      return true;
+    case 'object': {
+      const obj: Record<string, unknown> = {};
+      if (schema.properties) {
+        for (const [key, child] of Object.entries(schema.properties)) {
+          obj[key] = generateSampleData(child);
+        }
+      }
+      return obj;
+    }
+    case 'array': {
+      if (schema.items) {
+        return [generateSampleData(schema.items)];
+      }
+      return [];
+    }
+    default:
+      return null;
+  }
 }
 
 function fieldsToSchema(fields: SchemaField[]): JsonSchema {
@@ -205,30 +244,6 @@ function updateFieldById(
   });
 }
 
-function addChildField(fields: SchemaField[], parentId: string): SchemaField[] {
-  return fields.map((field) => {
-    if (field.id === parentId) {
-      const newField = buildField(
-        `字段${field.children.length + 1}`,
-        { type: 'string' },
-        new Set()
-      );
-      return {
-        ...field,
-        expanded: true,
-        children: [...field.children, newField],
-      };
-    }
-    if (field.children.length > 0) {
-      return {
-        ...field,
-        children: addChildField(field.children, parentId),
-      };
-    }
-    return field;
-  });
-}
-
 function addSiblingAfter(
   fields: SchemaField[],
   siblingId: string
@@ -236,7 +251,7 @@ function addSiblingAfter(
   const index = fields.findIndex((field) => field.id === siblingId);
   if (index !== -1) {
     const newField = buildField(
-      `字段${fields.length + 1}`,
+      `field${fields.length + 1}`,
       { type: 'string' },
       new Set()
     );
@@ -283,6 +298,33 @@ function toggleExpandById(fields: SchemaField[], id: string): SchemaField[] {
   });
 }
 
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (
+    typeof a !== 'object' ||
+    typeof b !== 'object' ||
+    a == null ||
+    b == null
+  ) {
+    return false;
+  }
+  const aIsArray = Array.isArray(a);
+  const bIsArray = Array.isArray(b);
+  if (aIsArray !== bIsArray) return false;
+  if (aIsArray) {
+    const aArr = a as unknown[];
+    const bArr = b as unknown[];
+    if (aArr.length !== bArr.length) return false;
+    return aArr.every((item, index) => deepEqual(item, bArr[index]));
+  }
+  const aObj = a as Record<string, unknown>;
+  const bObj = b as Record<string, unknown>;
+  const aKeys = Object.keys(aObj);
+  const bKeys = Object.keys(bObj);
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((key) => deepEqual(aObj[key], bObj[key]));
+}
+
 function TreeIndent({ level }: { level: number }) {
   return (
     <>
@@ -325,37 +367,48 @@ function SchemaTypeSelect({
 interface SchemaRowActionsProps {
   fieldId: string;
   fieldName: string;
+  showAdd: boolean;
+  showDelete?: boolean;
+  disableDelete?: boolean;
   onAdd: () => void;
   onDelete: () => void;
 }
 
 function SchemaRowActions({
   fieldName,
+  showAdd,
+  showDelete = true,
+  disableDelete,
   onAdd,
   onDelete,
 }: SchemaRowActionsProps) {
   return (
     <div className="flex items-center justify-end gap-1">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7"
-        onClick={onAdd}
-        aria-label={`在字段 ${fieldName || '未命名'} 后添加行`}
-      >
-        <Plus className="h-4 w-4" />
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7"
-        onClick={onDelete}
-        aria-label={`删除字段 ${fieldName || '未命名'}`}
-      >
-        <Trash2 className="h-4 w-4 text-destructive" />
-      </Button>
+      {showAdd && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={onAdd}
+          aria-label={`在字段 ${fieldName || '未命名'} 后添加行`}
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      )}
+      {showDelete && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          disabled={disableDelete}
+          onClick={onDelete}
+          aria-label={`删除字段 ${fieldName || '未命名'}`}
+        >
+          <Trash2 className="h-4 w-4 text-destructive" />
+        </Button>
+      )}
     </div>
   );
 }
@@ -364,10 +417,11 @@ interface SchemaFieldRowProps {
   field: SchemaField;
   level: number;
   readOnly?: boolean;
+  disableDelete?: boolean;
   dispatch: (action: SchemaAction) => void;
 }
 
-function SchemaFieldRow({ field, level, readOnly, dispatch }: SchemaFieldRowProps) {
+function SchemaFieldRow({ field, level, readOnly, disableDelete, dispatch }: SchemaFieldRowProps) {
   const hasChildren = field.children.length > 0;
   const displayName = field.name || '未命名';
 
@@ -401,7 +455,7 @@ function SchemaFieldRow({ field, level, readOnly, dispatch }: SchemaFieldRowProp
               name={`schema-name-${field.id}`}
               aria-label={`字段 ${displayName} 名称`}
               autoComplete="off"
-              disabled={readOnly}
+              disabled={readOnly || field.isArrayItem}
               className="h-7 border-transparent bg-transparent px-1 shadow-none focus-visible:bg-background disabled:opacity-100"
               value={field.name}
               onChange={(event) =>
@@ -425,20 +479,22 @@ function SchemaFieldRow({ field, level, readOnly, dispatch }: SchemaFieldRowProp
           />
         </TableCell>
         <TableCell>
-          <Checkbox
-            id={`schema-required-${field.id}`}
-            name={`schema-required-${field.id}`}
-            aria-label={`字段 ${displayName} 是否必填`}
-            checked={field.required}
-            disabled={readOnly}
-            onCheckedChange={(checked: boolean | 'indeterminate') =>
-              dispatch({
-                type: 'update',
-                id: field.id,
-                patch: { required: checked === true },
-              })
-            }
-          />
+          {field.isArrayItem ? null : (
+            <Checkbox
+              id={`schema-required-${field.id}`}
+              name={`schema-required-${field.id}`}
+              aria-label={`字段 ${displayName} 是否必填`}
+              checked={field.required}
+              disabled={readOnly}
+              onCheckedChange={(checked: boolean | 'indeterminate') =>
+                dispatch({
+                  type: 'update',
+                  id: field.id,
+                  patch: { required: checked === true },
+                })
+              }
+            />
+          )}
         </TableCell>
         <TableCell>
           <Input
@@ -463,9 +519,12 @@ function SchemaFieldRow({ field, level, readOnly, dispatch }: SchemaFieldRowProp
             <SchemaRowActions
               fieldId={field.id}
               fieldName={field.name}
+              showAdd={!field.isArrayItem}
+              showDelete={!field.isArrayItem}
+              disableDelete={disableDelete}
               onAdd={() =>
                 dispatch({
-                  type: field.type === 'object' ? 'addChild' : 'addSibling',
+                  type: 'addSibling',
                   id: field.id,
                 })
               }
@@ -481,11 +540,17 @@ function SchemaFieldRow({ field, level, readOnly, dispatch }: SchemaFieldRowProp
             field={child}
             level={level + 1}
             readOnly={readOnly}
+            disableDelete={field.type === 'object' && field.children.length <= 1}
             dispatch={dispatch}
           />
         ))}
     </>
   );
+}
+
+interface EditorState {
+  history: SchemaField[][];
+  index: number;
 }
 
 export function JsonSchemaEditor({
@@ -495,24 +560,32 @@ export function JsonSchemaEditor({
   readOnly,
   className,
 }: JsonSchemaEditorProps) {
-  const [fields, setFields] = useState<SchemaField[]>(() =>
-    schemaToFields(value)
-  );
-  const [showJsonEditor, setShowJsonEditor] = useState(false);
+  const [editorState, setEditorState] = useState<EditorState>(() => ({
+    history: [ensureAtLeastOneField(schemaToFields(value))],
+    index: 0,
+  }));
+  const fields = editorState.history[editorState.index];
+  const editorStateRef = useRef(editorState);
+  useEffect(() => {
+    editorStateRef.current = editorState;
+  }, [editorState]);
+
+  const [viewMode, setViewMode] = useState<'json' | 'preview' | 'table'>('table');
   const [jsonText, setJsonText] = useState(() =>
     JSON.stringify(value, null, 2)
   );
   const [jsonError, setJsonError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
   const isJsonEditingRef = useRef(false);
-  const prevValueRef = useRef(value);
+  const lastEmittedSchemaRef = useRef<JsonSchema>(value);
 
   const jsonString = useMemo(() => JSON.stringify(value, null, 2), [value]);
 
   useEffect(() => {
-    if (value !== prevValueRef.current) {
-      setFields(schemaToFields(value));
-      prevValueRef.current = value;
+    if (!deepEqual(value, lastEmittedSchemaRef.current)) {
+      const nextFields = ensureAtLeastOneField(schemaToFields(value));
+      setEditorState({ history: [nextFields], index: 0 });
+      lastEmittedSchemaRef.current = value;
     }
   }, [value]);
 
@@ -523,44 +596,85 @@ export function JsonSchemaEditor({
     }
   }, [jsonString]);
 
+  useEffect(() => {
+    setCopiedLabel(null);
+  }, [viewMode]);
+
+  const pushSnapshot = useCallback((nextFields: SchemaField[]) => {
+    setEditorState((prev) => {
+      if (deepEqual(prev.history[prev.index], nextFields)) return prev;
+      return {
+        history: [...prev.history.slice(0, prev.index + 1), nextFields],
+        index: prev.index + 1,
+      };
+    });
+  }, []);
+
   const dispatch = useCallback(
     (action: SchemaAction) => {
+      const currentFields =
+        editorStateRef.current.history[editorStateRef.current.index];
       let nextFields: SchemaField[];
       switch (action.type) {
         case 'update':
-          nextFields = updateFieldById(fields, action.id, action.patch);
-          break;
-        case 'addChild':
-          nextFields = addChildField(fields, action.id);
+          nextFields = updateFieldById(currentFields, action.id, action.patch);
           break;
         case 'addSibling':
-          nextFields = addSiblingAfter(fields, action.id) ?? fields;
+          nextFields = addSiblingAfter(currentFields, action.id) ?? currentFields;
           break;
         case 'delete':
-          nextFields = deleteFieldById(fields, action.id);
+          nextFields = deleteFieldById(currentFields, action.id);
           break;
         case 'toggleExpand':
-          nextFields = toggleExpandById(fields, action.id);
+          nextFields = toggleExpandById(currentFields, action.id);
           break;
         default:
           return;
       }
-      setFields(nextFields);
-      onChange(fieldsToSchema(nextFields));
+      nextFields = ensureAtLeastOneField(nextFields);
+      const schema = fieldsToSchema(nextFields);
+      lastEmittedSchemaRef.current = schema;
+      pushSnapshot(nextFields);
+      onChange(schema);
     },
-    [fields, onChange]
+    [onChange, pushSnapshot]
   );
 
-  const handleToggleJsonEditor = useCallback(() => {
-    setShowJsonEditor((prev) => {
-      const next = !prev;
-      if (next) {
+  const canUndo = editorState.index > 0;
+  const canRedo = editorState.index < editorState.history.length - 1;
+
+  const handleUndo = useCallback(() => {
+    const current = editorStateRef.current;
+    if (current.index <= 0) return;
+    const nextIndex = current.index - 1;
+    const nextFields = current.history[nextIndex];
+    const schema = fieldsToSchema(nextFields);
+    setEditorState({ ...current, index: nextIndex });
+    lastEmittedSchemaRef.current = schema;
+    onChange(schema);
+  }, [onChange]);
+
+  const handleRedo = useCallback(() => {
+    const current = editorStateRef.current;
+    if (current.index >= current.history.length - 1) return;
+    const nextIndex = current.index + 1;
+    const nextFields = current.history[nextIndex];
+    const schema = fieldsToSchema(nextFields);
+    setEditorState({ ...current, index: nextIndex });
+    lastEmittedSchemaRef.current = schema;
+    onChange(schema);
+  }, [onChange]);
+
+  const handleSetViewMode = useCallback(
+    (mode: 'json' | 'preview' | 'table') => () => {
+      setViewMode(mode);
+      if (mode === 'json') {
         setJsonText(jsonString);
         setJsonError(null);
       }
-      return next;
-    });
-  }, [jsonString]);
+    },
+    [jsonString]
+  );
 
   const handleJsonChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -573,7 +687,11 @@ export function JsonSchemaEditor({
           typeof parsed === 'object' &&
           !Array.isArray(parsed)
         ) {
-          onChange(parsed as JsonSchema);
+          const nextFields = ensureAtLeastOneField(schemaToFields(parsed as JsonSchema));
+          const schema = fieldsToSchema(nextFields);
+          lastEmittedSchemaRef.current = schema;
+          pushSnapshot(nextFields);
+          onChange(schema);
           setJsonError(null);
         } else {
           setJsonError('请输入有效的 JSON 对象。');
@@ -582,7 +700,7 @@ export function JsonSchemaEditor({
         setJsonError('JSON 解析失败，请检查格式。');
       }
     },
-    [onChange]
+    [onChange, pushSnapshot]
   );
 
   const handleJsonFocus = useCallback(() => {
@@ -597,13 +715,19 @@ export function JsonSchemaEditor({
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(jsonString);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
+      let text = jsonString;
+      let label = '已复制 json schema';
+      if (viewMode === 'preview') {
+        text = JSON.stringify(generateSampleData(value), null, 2);
+        label = '已复制 json 示例';
+      }
+      await navigator.clipboard.writeText(text);
+      setCopiedLabel(label);
+      window.setTimeout(() => setCopiedLabel(null), 1500);
     } catch {
       // Ignore clipboard errors.
     }
-  }, [jsonString]);
+  }, [jsonString, value, viewMode]);
 
   const handleSave = useCallback(() => {
     onSave?.(value);
@@ -617,40 +741,98 @@ export function JsonSchemaEditor({
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-2">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center overflow-hidden rounded-md border border-border">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={handleToggleJsonEditor}
-            className="h-7 text-xs"
+            onClick={handleSetViewMode('table')}
+            className={cn(
+              'h-7 rounded-none border-r border-border text-xs',
+              viewMode === 'table' && 'bg-muted'
+            )}
           >
-            {showJsonEditor ? '表格视图' : 'JSON 视图'}
+            表格视图
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={handleCopy}
-            className="h-7 text-xs"
+            onClick={handleSetViewMode('json')}
+            className={cn(
+              'h-7 rounded-none border-r border-border text-xs',
+              viewMode === 'json' && 'bg-muted'
+            )}
           >
-            {copied ? '已复制' : '复制'}
+            JSON 视图
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleSetViewMode('preview')}
+            className={cn(
+              'h-7 rounded-none text-xs',
+              viewMode === 'preview' && 'bg-muted'
+            )}
+          >
+            预览
           </Button>
         </div>
-        {!readOnly && onSave && (
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleSave}
-            className="h-7 text-xs"
-          >
-            保存
-          </Button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {!readOnly && onSave && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleSave}
+              className="h-7 text-xs"
+            >
+              保存
+            </Button>
+          )}
+          {viewMode !== 'table' && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleCopy}
+              className="h-7 text-xs"
+            >
+              {copiedLabel ?? '复制'}
+            </Button>
+          )}
+          {!readOnly && (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleUndo}
+                disabled={!canUndo}
+                className="h-7 w-7"
+                aria-label="撤销"
+              >
+                <Undo2 className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleRedo}
+                disabled={!canRedo}
+                className="h-7 w-7"
+                aria-label="恢复"
+              >
+                <Redo2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+
+        </div>
       </div>
 
-      {showJsonEditor ? (
-        <div className="p-2 space-y-2">
+      {viewMode === 'json' ? (
+        <div className="space-y-2 p-2">
           <Textarea
             value={jsonText}
             onChange={readOnly ? undefined : handleJsonChange}
@@ -664,42 +846,38 @@ export function JsonSchemaEditor({
             <p className="text-xs text-destructive">{jsonError}</p>
           )}
         </div>
+      ) : viewMode === 'preview' ? (
+        <div className="p-2">
+          <Textarea
+            value={JSON.stringify(generateSampleData(value), null, 2)}
+            readOnly
+            className="min-h-[320px] font-mono text-xs"
+          />
+        </div>
       ) : (
-        <>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[28%]">名称</TableHead>
-                <TableHead className="w-[18%]">类型</TableHead>
-                <TableHead className="w-[12%]">必填</TableHead>
-                <TableHead className="w-[30%]">描述</TableHead>
-                <TableHead className="w-[12%]" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {fields.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="h-24 text-center text-sm text-muted-foreground"
-                  >
-                    暂无字段。
-                  </TableCell>
-                </TableRow>
-              ) : (
-                fields.map((field) => (
-                  <SchemaFieldRow
-                    key={field.id}
-                    field={field}
-                    level={0}
-                    readOnly={readOnly}
-                    dispatch={dispatch}
-                  />
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[28%]">名称</TableHead>
+              <TableHead className="w-[18%]">类型</TableHead>
+              <TableHead className="w-[12%]">必填</TableHead>
+              <TableHead className="w-[30%]">描述</TableHead>
+              <TableHead className="w-[12%]" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {fields.map((field) => (
+              <SchemaFieldRow
+                key={field.id}
+                field={field}
+                level={0}
+                readOnly={readOnly}
+                disableDelete={fields.length <= 1}
+                dispatch={dispatch}
+              />
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );

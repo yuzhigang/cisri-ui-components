@@ -4,13 +4,13 @@ import { ArrowRight } from 'lucide-react';
 export function HomeSection() {
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight">@arim/ui</h2>
+      <h2 className="text-3xl font-bold tracking-tight">@cisri/ui</h2>
       <p className="text-lg text-muted-foreground">
         A shadcn/ui-based React business component library. Install only the components you need.
         Keep full control over styling through CSS variables and Tailwind config.
       </p>
       <div className="grid gap-4 sm:grid-cols-3">
-        <FeatureCard title="独立安装" description="每个业务组件都是单独的 npm 包，例如 @arim/json-schema-editor。" />
+        <FeatureCard title="独立安装" description="每个业务组件都是单独的 npm 包，例如 @cisri/json-schema-editor。" />
         <FeatureCard title="样式可覆盖" description="组件只使用 CSS 变量，不硬编码颜色，依赖者可完全控制主题。" />
         <FeatureCard title="Peer Dependencies" description="Radix UI、tailwind-merge 等底层依赖复用项目已有实例。" />
       </div>

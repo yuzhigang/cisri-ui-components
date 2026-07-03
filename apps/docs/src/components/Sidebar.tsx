@@ -17,7 +17,7 @@ export function Sidebar() {
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
           A
         </span>
-        @arim/ui
+        @cisri/ui
       </div>
       <ul className="space-y-2">
         {links.map(({ to, label, icon: Icon }) => (

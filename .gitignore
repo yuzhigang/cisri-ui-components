@@ -9,3 +9,5 @@ dist
 .worktrees
 worktrees
 *.tgz
+*.tsbuildinfo
+.claude/

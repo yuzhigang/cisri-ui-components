@@ -7,11 +7,11 @@ const packageNames = readdirSync(packagesDir).filter((name) =>
   statSync(resolve(packagesDir, name)).isDirectory()
 );
 
-// Build @arim/core first, then remaining packages.
+// Build @cisri/core first, then remaining packages.
 const ordered = ['core', ...packageNames.filter((name) => name !== 'core')];
 
 for (const name of ordered) {
-  console.log(`\n=== Building @arim/${name} ===`);
+  console.log(`\n=== Building @cisri/${name} ===`);
   execSync('pnpm run build', {
     cwd: resolve(packagesDir, name),
     stdio: 'inherit',

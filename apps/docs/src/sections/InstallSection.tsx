@@ -9,7 +9,7 @@ export function InstallSection() {
       <div className="space-y-2">
         <h3 className="font-semibold">Component</h3>
         <pre className="rounded-md bg-muted p-4 text-sm">
-          <code>npm install @arim/json-schema-editor</code>
+          <code>npm install @cisri/json-schema-editor</code>
         </pre>
       </div>
 
@@ -27,7 +27,7 @@ export function InstallSection() {
         </p>
         <pre className="rounded-md bg-muted p-4 text-sm">
           <code>{`content: [
-  './node_modules/@arim/*/dist/**/*.{js,cjs}',
+  './node_modules/@cisri/*/dist/**/*.{js,cjs}',
 ]`}</code>
         </pre>
       </div>

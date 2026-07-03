@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
-import { cn } from '@arim/core';
+import { cn } from '@cisri/core';
 import { Check } from 'lucide-react';
 
 const Checkbox = React.forwardRef<

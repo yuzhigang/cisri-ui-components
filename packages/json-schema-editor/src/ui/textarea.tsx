@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn } from '@arim/core';
+import { cn } from '@cisri/core';
 
 export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}

@@ -27,7 +27,7 @@ export function ThemingSection() {
         <h3 className="font-semibold">How to override</h3>
         <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
           <li>Define your own values for the CSS variables in `:root`.</li>
-          <li>Make sure Tailwind scans <code>node_modules/@arim/*/dist/**/*.{'{js,cjs}'}</code>.</li>
+          <li>Make sure Tailwind scans <code>node_modules/@cisri/*/dist/**/*.{'{js,cjs}'}</code>.</li>
           <li>Pass `className` to any component for one-off tweaks.</li>
         </ol>
       </div>
