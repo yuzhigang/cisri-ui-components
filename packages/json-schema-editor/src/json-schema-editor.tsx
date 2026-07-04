@@ -20,19 +20,16 @@ import {
 import { Textarea } from './ui/textarea';
 import { cn } from '@cisri/core';
 import { ChevronDown, Minus, Plus, Redo2, Trash2, Undo2 } from 'lucide-react';
+import type { JsonSchema, JsonSchemaType } from '@cisri/json-schema-core';
+import { generateSampleData } from '@cisri/json-schema-core';
 import {
-  type JsonSchema,
-  type JsonSchemaType,
   type SchemaField,
   buildField,
   defaultChildrenForType,
   ensureAtLeastOneField,
   fieldsToSchema,
-  generateSampleData,
   schemaToFields,
 } from './schema-utils';
-
-export type { JsonSchema, JsonSchemaType } from './schema-utils';
 
 export interface JsonSchemaEditorProps {
   value: JsonSchema;

@@ -25,7 +25,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@cisri/core": "workspace:*"
+    "@cisri/core": "workspace:*",
+    "@cisri/json-schema-core": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
