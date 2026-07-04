@@ -157,6 +157,18 @@ importers:
         specifier: ^5.2.11
         version: 5.4.21(@types/node@20.19.43)
 
+  packages/json-schema-core:
+    devDependencies:
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
+      vite:
+        specifier: ^5.2.11
+        version: 5.4.21(@types/node@20.19.43)
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@20.19.43)(jsdom@24.1.3)
+
   packages/json-schema-editor:
     dependencies:
       '@cisri/core':
