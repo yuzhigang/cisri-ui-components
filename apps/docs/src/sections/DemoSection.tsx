@@ -63,7 +63,7 @@ export function DemoSection() {
       <div className="space-y-6">
         <h2 className="text-2xl font-bold tracking-tight">Schema Selector</h2>
         <p className="text-muted-foreground">
-          Choose a predefined schema from the selector. The selected entry is logged to the console.
+          Choose a predefined schema from the selector. The selected entry is shown below and also loaded into the editor above.
         </p>
 
         <div className="rounded-lg border border-border bg-card p-6">
