@@ -25,13 +25,13 @@ const sampleEntries: JsonSchemaEntry[] = [
   {
     id: 'user',
     name: 'User',
-    description: '用户资料 schema',
+    description: 'User profile schema',
     schema: { type: 'object', title: 'User', properties: { name: { type: 'string' } } },
   },
   {
     id: 'order',
     name: 'Order',
-    description: '订单 schema',
+    description: 'Order schema',
     schema: { type: 'object', title: 'Order', properties: { id: { type: 'string' } } },
   },
 ];
@@ -72,14 +72,14 @@ export function DemoSection() {
             selectedId={selectedEntry?.id}
             onSelect={(entry) => {
               setSelectedEntry(entry);
-              console.log('selected', entry);
+              setSchema(entry.schema);
             }}
           />
         </div>
 
         {selectedEntry && (
           <div className="space-y-2">
-            <h3 className="font-semibold">Selected schema</h3>
+            <h3 className="font-semibold">Selected schema: {selectedEntry.name}</h3>
             <pre className="max-h-96 overflow-auto rounded-md bg-muted p-4 text-xs">
               <code>{JSON.stringify(selectedEntry, null, 2)}</code>
             </pre>
