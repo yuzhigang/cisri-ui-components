@@ -16,7 +16,7 @@ function useDialogContextCheck() {
     const hasContext = React.useContext(DialogContext);
     if (!hasContext) {
       console.warn(
-        '[@cisri/json-schema-selector / DialogPrimitive] DialogPrimitive context not found. Ensure @radix-ui/react-dialog is installed and there is only one copy in your bundle.'
+        '[@cisri/json-schema-selector / Dialog] DialogContent must be rendered inside a Dialog component. Ensure you are using the Dialog exported from @cisri/json-schema-selector.'
       );
     }
   }

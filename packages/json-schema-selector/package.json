@@ -41,14 +41,14 @@
     "tailwind-merge": "^2.0.0"
   },
   "peerDependenciesMeta": {
-    "@radix-ui/react-dialog": { "optional": true },
-    "@radix-ui/react-scroll-area": { "optional": true },
-    "@radix-ui/react-separator": { "optional": true },
-    "@radix-ui/react-slot": { "optional": true },
-    "class-variance-authority": { "optional": true },
-    "clsx": { "optional": true },
-    "lucide-react": { "optional": true },
-    "tailwind-merge": { "optional": true }
+    "@radix-ui/react-dialog": { "optional": false },
+    "@radix-ui/react-scroll-area": { "optional": false },
+    "@radix-ui/react-separator": { "optional": false },
+    "@radix-ui/react-slot": { "optional": false },
+    "class-variance-authority": { "optional": false },
+    "clsx": { "optional": false },
+    "lucide-react": { "optional": false },
+    "tailwind-merge": { "optional": false }
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.5",

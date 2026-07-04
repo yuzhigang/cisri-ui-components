@@ -154,7 +154,7 @@ export function JsonSchemaSelector({
   }, [entries, onSelect, pendingId]);
 
   return (
-    <div className={cn(className)}>
+    <div className={cn(classNames?.root, className)}>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           {trigger ?? (
@@ -199,12 +199,11 @@ export function JsonSchemaSelector({
                 <p className="text-sm text-muted-foreground">{emptyText}</p>
               ) : (
                 <ScrollArea className="flex-1">
-                  <div role="listbox" aria-label="schema 列表" className="space-y-1 pr-3">
+                  <div aria-label="schema 列表" className="space-y-1 pr-3">
                     {filteredEntries.map((entry) => (
                       <button
                         key={entry.id}
                         type="button"
-                        role="option"
                         aria-selected={pendingId === entry.id}
                         onClick={() => setPendingId(entry.id)}
                         onMouseEnter={() => setHoveredId(entry.id)}

@@ -78,7 +78,7 @@ Create `packages/json-schema-core/package.json`:
   "sideEffects": false,
   "scripts": {
     "build": "tsc && vite build",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "pnpm build"
   },
   "publishConfig": {
     "access": "public"
@@ -118,6 +118,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   build: {
+    emptyOutDir: false,
     lib: {
       entry: './src/index.ts',
       name: 'JsonSchemaCore',
@@ -765,8 +766,9 @@ Create `packages/json-schema-selector/package.json`:
   "sideEffects": false,
   "scripts": {
     "build": "tsc && vite build",
-    "prepublishOnly": "npm run build",
-    "test": "vitest run"
+    "prepublishOnly": "pnpm build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "publishConfig": {
     "access": "public"
@@ -798,12 +800,18 @@ Create `packages/json-schema-selector/package.json`:
     "tailwind-merge": { "optional": true }
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.5",
+    "@testing-library/react": "^15.0.7",
+    "@testing-library/user-event": "^14.5.2",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "jsdom": "^24.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "^5.4.5",
-    "vite": "^5.2.11"
+    "vite": "^5.2.11",
+    "vitest": "^1.6.0"
   }
 }
 ```
@@ -835,29 +843,30 @@ Create `packages/json-schema-selector/vite.config.ts`:
 ```ts
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import { peerDependencies, dependencies } from './package.json' assert { type: 'json' };
 
 export default defineConfig({
   plugins: [react()],
   build: {
+    emptyOutDir: false,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: './src/index.ts',
       name: 'JsonSchemaSelector',
       formats: ['es', 'cjs'],
-      fileName: (format) => `index.${format === 'es' ? 'js' : 'cjs'}`,
+      fileName: 'index',
     },
     rollupOptions: {
       external: [
-        'react',
-        'react-dom',
-        '@cisri/core',
-        '@cisri/json-schema-core',
-        /@radix-ui\/react-.*/,
-        'lucide-react',
-        'class-variance-authority',
-        'clsx',
-        'tailwind-merge',
+        ...Object.keys(peerDependencies),
+        ...Object.keys(dependencies),
+        'react/jsx-runtime',
       ],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+        },
+      },
     },
   },
 });
@@ -869,7 +878,7 @@ Create `packages/json-schema-selector/src/json-schema-selector.tsx`:
 
 ```tsx
 import * as React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { cn } from '@cisri/core';
 import type { JsonSchema } from '@cisri/json-schema-core';
 import { generateSampleData } from '@cisri/json-schema-core';
