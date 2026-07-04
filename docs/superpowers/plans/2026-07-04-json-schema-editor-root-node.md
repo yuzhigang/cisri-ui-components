@@ -315,6 +315,7 @@ import {
   type JsonSchemaType,
   type SchemaField,
   buildEmptyField,
+  defaultChildrenForType,
   ensureAtLeastOneField,
   fieldToSchema,
   fieldsToSchema,
