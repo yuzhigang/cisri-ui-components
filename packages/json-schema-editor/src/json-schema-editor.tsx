@@ -450,6 +450,16 @@ export function JsonSchemaEditor({
     (action: SchemaAction) => {
       const currentFields =
         editorStateRef.current.history[editorStateRef.current.index];
+      const root = currentFields[0];
+
+      if (
+        root &&
+        action.id === root.id &&
+        (action.type === 'delete' || action.type === 'addSibling')
+      ) {
+        return;
+      }
+
       let nextFields: SchemaField[];
       switch (action.type) {
         case 'update':
