@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { useState } from 'react';
 import userEvent from '@testing-library/user-event';
 import { JsonSchemaEditor } from './json-schema-editor';
 
@@ -109,5 +110,78 @@ describe('JsonSchemaEditor root node', () => {
       name: '删除字段 User',
     });
     expect(rootDeleteButton).not.toBeInTheDocument();
+  });
+
+  it('syncs root title from JSON view', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <JsonSchemaEditor
+        value={{ type: 'object', properties: {} }}
+        onChange={onChange}
+      />
+    );
+
+    const jsonButton = screen.getByRole('button', { name: 'JSON 视图' });
+    await user.click(jsonButton);
+
+    const textarea = screen.getByPlaceholderText('在此编辑或粘贴 JSON Schema...');
+    await user.clear(textarea);
+    await user.type(textarea, '{{"type":"object","title":"Product","properties":{{}}}}');
+
+    const lastCall = onChange.mock.calls.at(-1)?.[0];
+    expect(lastCall).toMatchObject({ type: 'object', title: 'Product' });
+  });
+
+  it('undo and redo root title changes', async () => {
+    const user = userEvent.setup();
+    function ControlledEditor({
+      initial,
+    }: {
+      initial: { type: 'object'; title: string; properties: Record<string, never> };
+    }) {
+      const [value, setValue] = useState(initial);
+      return (
+        <JsonSchemaEditor
+          value={value}
+          onChange={(next) => setValue(next as typeof initial)}
+        />
+      );
+    }
+    render(
+      <ControlledEditor
+        initial={{ type: 'object', title: 'User', properties: {} }}
+      />
+    );
+
+    const titleInput = screen.getByDisplayValue('User');
+    fireEvent.change(titleInput, { target: { value: 'Product' } });
+    await waitFor(() =>
+      expect(screen.getByDisplayValue('Product')).toBeInTheDocument()
+    );
+
+    const undoButton = screen.getByRole('button', { name: '撤销' });
+    await user.click(undoButton);
+    expect(screen.getByDisplayValue('User')).toBeInTheDocument();
+
+    const redoButton = screen.getByRole('button', { name: '恢复' });
+    await user.click(redoButton);
+    expect(screen.getByDisplayValue('Product')).toBeInTheDocument();
+  });
+
+  it('renders root array schema with ITEMS row', () => {
+    render(
+      <JsonSchemaEditor
+        value={{
+          type: 'array',
+          title: 'Tags',
+          items: { type: 'string' },
+        }}
+        onChange={vi.fn()}
+      />
+    );
+
+    expect(screen.getByDisplayValue('Tags')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('ITEMS')).toBeInTheDocument();
   });
 });
