@@ -58,9 +58,9 @@ This component is built on top of shadcn/ui CSS variables (such as `--card`, `--
 <JsonSchemaSelector
   entries={entries}
   onSelect={(entry) => console.log('selected', entry)}
-  className="w-[720px]"
   classNames={{
-    dialogContent: 'border-primary shadow-lg',
+    root: 'inline-block',
+    dialogContent: 'w-[720px] max-w-full',
     list: 'bg-muted/30',
     schemaPreview: 'border-border',
   }}
