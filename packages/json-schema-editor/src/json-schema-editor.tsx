@@ -20,23 +20,19 @@ import {
 import { Textarea } from './ui/textarea';
 import { cn } from '@cisri/core';
 import { ChevronDown, Minus, Plus, Redo2, Trash2, Undo2 } from 'lucide-react';
+import {
+  type JsonSchema,
+  type JsonSchemaType,
+  type SchemaField,
+  buildField,
+  defaultChildrenForType,
+  ensureAtLeastOneField,
+  fieldsToSchema,
+  generateSampleData,
+  schemaToFields,
+} from './schema-utils';
 
-export type JsonSchemaType =
-  | 'object'
-  | 'array'
-  | 'string'
-  | 'number'
-  | 'boolean'
-  | 'integer';
-
-export interface JsonSchema {
-  type?: JsonSchemaType;
-  title?: string;
-  description?: string;
-  properties?: Record<string, JsonSchema>;
-  required?: string[];
-  items?: JsonSchema;
-}
+export type { JsonSchema, JsonSchemaType } from './schema-utils';
 
 export interface JsonSchemaEditorProps {
   value: JsonSchema;
@@ -44,18 +40,6 @@ export interface JsonSchemaEditorProps {
   onSave?: (value: JsonSchema) => void;
   readOnly?: boolean;
   className?: string;
-}
-
-interface SchemaField {
-  id: string;
-  name: string;
-  type: JsonSchemaType;
-  required: boolean;
-  description?: string;
-  schema: JsonSchema;
-  children: SchemaField[];
-  expanded: boolean;
-  isArrayItem?: boolean;
 }
 
 type SchemaAction =
@@ -72,154 +56,6 @@ const TYPE_OPTIONS: JsonSchemaType[] = [
   'integer',
   'boolean',
 ];
-
-let globalIdCounter = 0;
-
-function generateId(): string {
-  return `sf-${++globalIdCounter}`;
-}
-
-function defaultChildrenForType(type: JsonSchemaType): SchemaField[] {
-  if (type === 'object') {
-    return [buildField('field1', { type: 'string' }, new Set())];
-  }
-  if (type === 'array') {
-    return [buildField('ITEMS', { type: 'string' }, new Set(), true)];
-  }
-  return [];
-}
-
-function buildField(
-  name: string,
-  schema: JsonSchema,
-  requiredSet: Set<string>,
-  isArrayItem = false
-): SchemaField {
-  const type = schema.type ?? 'object';
-  const children: SchemaField[] = [];
-
-  if (type === 'object' && schema.properties) {
-    const childRequired = new Set(schema.required ?? []);
-    for (const [childName, childSchema] of Object.entries(schema.properties)) {
-      children.push(buildField(childName, childSchema, childRequired));
-    }
-  } else if (type === 'array' && schema.items) {
-    children.push(buildField('ITEMS', schema.items, new Set(), true));
-  }
-
-  return {
-    id: generateId(),
-    name,
-    type,
-    required: requiredSet.has(name),
-    description: schema.description,
-    schema,
-    children,
-    expanded: true,
-    isArrayItem,
-  };
-}
-
-function schemaToFields(schema: JsonSchema): SchemaField[] {
-  const type = schema.type ?? 'object';
-  if (type !== 'object' || !schema.properties) {
-    return [];
-  }
-  const required = new Set(schema.required ?? []);
-  return Object.entries(schema.properties).map(([name, childSchema]) =>
-    buildField(name, childSchema, required)
-  );
-}
-
-function buildEmptyField(): SchemaField {
-  return buildField('', { type: 'string' }, new Set());
-}
-
-function ensureAtLeastOneField(fields: SchemaField[]): SchemaField[] {
-  return fields.length > 0 ? fields : [buildEmptyField()];
-}
-
-function generateSampleData(schema: JsonSchema): unknown {
-  switch (schema.type) {
-    case 'string':
-      return 'string';
-    case 'number':
-    case 'integer':
-      return 0;
-    case 'boolean':
-      return true;
-    case 'object': {
-      const obj: Record<string, unknown> = {};
-      if (schema.properties) {
-        for (const [key, child] of Object.entries(schema.properties)) {
-          obj[key] = generateSampleData(child);
-        }
-      }
-      return obj;
-    }
-    case 'array': {
-      if (schema.items) {
-        return [generateSampleData(schema.items)];
-      }
-      return [];
-    }
-    default:
-      return null;
-  }
-}
-
-function fieldsToSchema(fields: SchemaField[]): JsonSchema {
-  const properties: Record<string, JsonSchema> = {};
-  const required: string[] = [];
-
-  for (const field of fields) {
-    properties[field.name] = fieldToSchema(field);
-    if (field.required) required.push(field.name);
-  }
-
-  return {
-    type: 'object',
-    properties,
-    required: required.length > 0 ? required : undefined,
-  };
-}
-
-function fieldToSchema(field: SchemaField): JsonSchema {
-  const base: JsonSchema = { ...field.schema };
-
-  if (field.type === 'object') {
-    const childSchema = fieldsToSchema(field.children);
-    return {
-      ...base,
-      type: field.type,
-      description: field.description,
-      properties: childSchema.properties,
-      required: childSchema.required,
-      items: undefined,
-    };
-  }
-
-  if (field.type === 'array') {
-    const itemField = field.children[0];
-    return {
-      ...base,
-      type: field.type,
-      description: field.description,
-      items: itemField ? fieldToSchema(itemField) : { type: 'string' },
-      properties: undefined,
-      required: undefined,
-    };
-  }
-
-  return {
-    ...base,
-    type: field.type,
-    description: field.description,
-    properties: undefined,
-    items: undefined,
-    required: undefined,
-  };
-}
 
 function updateFieldById(
   fields: SchemaField[],
@@ -427,7 +263,7 @@ function SchemaFieldRow({ field, level, readOnly, disableDelete, dispatch }: Sch
 
   return (
     <>
-      <TableRow>
+      <TableRow className={cn(field.isRoot && 'bg-muted/30')}>
         <TableCell>
           <div className="flex items-center">
             <TreeIndent level={level} />
@@ -479,7 +315,7 @@ function SchemaFieldRow({ field, level, readOnly, disableDelete, dispatch }: Sch
           />
         </TableCell>
         <TableCell>
-          {field.isArrayItem ? null : (
+          {field.isArrayItem || field.isRoot ? null : (
             <Checkbox
               id={`schema-required-${field.id}`}
               name={`schema-required-${field.id}`}
@@ -515,7 +351,7 @@ function SchemaFieldRow({ field, level, readOnly, disableDelete, dispatch }: Sch
           />
         </TableCell>
         <TableCell>
-          {!readOnly && (
+          {!readOnly && !field.isRoot && (
             <SchemaRowActions
               fieldId={field.id}
               fieldName={field.name}
@@ -872,7 +708,7 @@ export function JsonSchemaEditor({
                 field={field}
                 level={0}
                 readOnly={readOnly}
-                disableDelete={fields.length <= 1}
+                disableDelete={true}
                 dispatch={dispatch}
               />
             ))}
