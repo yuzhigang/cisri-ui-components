@@ -44,6 +44,15 @@ describe('schemaToFields', () => {
     const fields = schemaToFields({});
     expect(fields[0].type).toBe('object');
     expect(fields[0].isRoot).toBe(true);
+    expect(fields[0].children).toHaveLength(1);
+  });
+
+  it('gives an empty object root a default child field', () => {
+    const fields = schemaToFields({});
+    expect(fields[0].type).toBe('object');
+    expect(fields[0].children).toHaveLength(1);
+    expect(fields[0].children[0].name).toBe('field1');
+    expect(fields[0].children[0].type).toBe('string');
   });
 });
 

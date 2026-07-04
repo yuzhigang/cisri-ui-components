@@ -83,6 +83,9 @@ export function buildField(
 
 export function schemaToFields(schema: JsonSchema): SchemaField[] {
   const root = buildField(schema.title ?? '', schema, new Set(), false, true);
+  if (root.type === 'object' && root.children.length === 0) {
+    root.children.push(buildField('field1', { type: 'string' }, new Set()));
+  }
   return [root];
 }
 
