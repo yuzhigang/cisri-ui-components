@@ -7,12 +7,11 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: [],
     passWithNoTests: true,
   },
   resolve: {
     alias: {
-      '@cisri/core': path.resolve(__dirname, '../core/src/index.ts'),
+      '@cisri/core': path.resolve(__dirname, '../core/src'),
     },
   },
 });
