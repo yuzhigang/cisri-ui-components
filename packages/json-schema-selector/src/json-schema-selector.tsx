@@ -204,6 +204,7 @@ export function JsonSchemaSelector({
                       <button
                         key={entry.id}
                         type="button"
+                        aria-label={entry.name}
                         aria-pressed={pendingId === entry.id}
                         onClick={() => setPendingId(entry.id)}
                         onMouseEnter={() => setHoveredId(entry.id)}

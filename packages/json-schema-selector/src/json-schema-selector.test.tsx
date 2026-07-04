@@ -65,6 +65,18 @@ describe('JsonSchemaSelector', () => {
     });
   });
 
+  it('filters entries locally by description', async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaSelector entries={entries} onSelect={() => {}} />);
+    await user.click(screen.getByRole('button', { name: '选择 Schema' }));
+    const search = screen.getByLabelText('搜索 schema');
+    await user.type(search, 'profile');
+    await waitFor(() => {
+      expect(screen.getByText('User')).toBeInTheDocument();
+      expect(screen.queryByText('Order')).not.toBeInTheDocument();
+    });
+  });
+
   it('calls onSearch when search is external', async () => {
     const user = userEvent.setup();
     const onSearch = vi.fn();
@@ -73,13 +85,54 @@ describe('JsonSchemaSelector', () => {
         entries={entries}
         onSelect={() => {}}
         onSearch={onSearch}
-        searchDebounceMs={0}
+        searchDebounceMs={50}
       />
     );
     await user.click(screen.getByRole('button', { name: '选择 Schema' }));
     const search = screen.getByLabelText('搜索 schema');
     await user.type(search, 'foo');
     await waitFor(() => expect(onSearch).toHaveBeenCalledWith('foo'));
+  });
+
+  it('shows skeleton loaders when loading', async () => {
+    const user = userEvent.setup();
+    render(
+      <JsonSchemaSelector entries={entries} onSelect={() => {}} loading />
+    );
+    await user.click(screen.getByRole('button', { name: '选择 Schema' }));
+    expect(document.querySelectorAll('.animate-pulse')).toHaveLength(3);
+  });
+
+  it('renders custom trigger and opens dialog', async () => {
+    const user = userEvent.setup();
+    render(
+      <JsonSchemaSelector
+        entries={entries}
+        onSelect={() => {}}
+        trigger={<button type="button">Custom trigger</button>}
+      />
+    );
+    expect(screen.queryByRole('button', { name: '选择 Schema' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Custom trigger' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('pre-selects an entry with selectedId and enables confirm', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(
+      <JsonSchemaSelector
+        entries={entries}
+        onSelect={onSelect}
+        selectedId="user"
+      />
+    );
+    await user.click(screen.getByRole('button', { name: '选择 Schema' }));
+    expect(screen.getByRole('button', { name: '确定' })).not.toBeDisabled();
+    await user.click(screen.getByRole('button', { name: '确定' }));
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith(entries[0]);
+    });
   });
 
   it('previews selected schema and sample data', async () => {
@@ -110,6 +163,31 @@ describe('JsonSchemaSelector', () => {
     expect(screen.getByRole('button', { name: '确定' })).toBeDisabled();
   });
 
+  it('clears pending selection and disables confirm when search filters it out', async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaSelector entries={entries} onSelect={() => {}} />);
+    await user.click(screen.getByRole('button', { name: '选择 Schema' }));
+    await user.click(screen.getByText('User'));
+    expect(screen.getByRole('button', { name: '确定' })).not.toBeDisabled();
+    const search = screen.getByLabelText('搜索 schema');
+    await user.type(search, 'order');
+    await waitFor(() => {
+      expect(screen.queryByText('User')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '确定' })).toBeDisabled();
+    });
+  });
+
+  it('closes dialog when cancel is clicked', async () => {
+    const user = userEvent.setup();
+    render(<JsonSchemaSelector entries={entries} onSelect={() => {}} />);
+    await user.click(screen.getByRole('button', { name: '选择 Schema' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '取消' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
   it('applies custom classNames', async () => {
     const user = userEvent.setup();
     render(
@@ -120,6 +198,6 @@ describe('JsonSchemaSelector', () => {
       />
     );
     await user.click(screen.getByRole('button', { name: '选择 Schema' }));
-    expect(screen.getByText('User').closest('button')).toHaveClass('custom-list-item');
+    expect(screen.getByRole('button', { name: 'User' })).toHaveClass('custom-list-item');
   });
 });
