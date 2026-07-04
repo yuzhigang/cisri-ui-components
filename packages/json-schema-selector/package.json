@@ -17,8 +17,9 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsc && vite build",
-    "prepublishOnly": "npm run build",
-    "test": "vitest run"
+    "prepublishOnly": "pnpm build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "publishConfig": {
     "access": "public"
