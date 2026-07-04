@@ -20,6 +20,12 @@ export default defineConfig({
         ...Object.keys(dependencies),
         'react/jsx-runtime',
       ],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+        },
+      },
     },
   },
 });

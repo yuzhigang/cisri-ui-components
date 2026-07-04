@@ -128,9 +128,21 @@ export function JsonSchemaSelector({
     );
   }, [entries, keyword, onSearch]);
 
+  useEffect(() => {
+    if (effectiveId && !filteredEntries.some((entry) => entry.id === effectiveId)) {
+      setPendingId(null);
+      setHoveredId(null);
+    }
+  }, [effectiveId, filteredEntries]);
+
   const selectedEntry = useMemo(
     () => entries.find((entry) => entry.id === effectiveId) ?? null,
     [entries, effectiveId]
+  );
+
+  const sampleData = useMemo(
+    () => (selectedEntry ? generateSampleData(selectedEntry.schema) : null),
+    [selectedEntry]
   );
 
   const handleConfirm = useCallback(() => {
@@ -187,7 +199,7 @@ export function JsonSchemaSelector({
                 <p className="text-sm text-muted-foreground">{emptyText}</p>
               ) : (
                 <ScrollArea className="flex-1">
-                  <div className="space-y-1 pr-3">
+                  <div role="listbox" aria-label="schema 列表" className="space-y-1 pr-3">
                     {filteredEntries.map((entry) => (
                       <button
                         key={entry.id}
@@ -226,7 +238,7 @@ export function JsonSchemaSelector({
                   />
                   <JsonPreview
                     label="示例数据"
-                    value={generateSampleData(selectedEntry.schema)}
+                    value={sampleData}
                     className={classNames?.samplePreview}
                   />
                 </>
