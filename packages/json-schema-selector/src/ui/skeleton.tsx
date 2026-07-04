@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { cn } from '@cisri/core';
 
 function Skeleton({
