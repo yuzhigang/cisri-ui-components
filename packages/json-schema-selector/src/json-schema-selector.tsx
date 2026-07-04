@@ -100,10 +100,9 @@ export function JsonSchemaSelector({
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState('');
   const debouncedKeyword = useDebounce(keyword, searchDebounceMs);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(selectedId ?? null);
 
-  const effectiveId = pendingId ?? hoveredId;
+  const effectiveId = pendingId;
 
   useEffect(() => {
     if (!open) return;
@@ -113,7 +112,6 @@ export function JsonSchemaSelector({
   useEffect(() => {
     if (open) {
       setPendingId(selectedId ?? null);
-      setHoveredId(null);
       setKeyword('');
     }
   }, [open, selectedId]);
@@ -131,7 +129,6 @@ export function JsonSchemaSelector({
   useEffect(() => {
     if (effectiveId && !filteredEntries.some((entry) => entry.id === effectiveId)) {
       setPendingId(null);
-      setHoveredId(null);
     }
   }, [effectiveId, filteredEntries]);
 
@@ -207,8 +204,6 @@ export function JsonSchemaSelector({
                         aria-label={entry.name}
                         aria-pressed={pendingId === entry.id}
                         onClick={() => setPendingId(entry.id)}
-                        onMouseEnter={() => setHoveredId(entry.id)}
-                        onMouseLeave={() => setHoveredId((prev) => (prev === entry.id ? null : prev))}
                         className={cn(
                           'w-full rounded-md border border-transparent px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
                           pendingId === entry.id && 'border-border bg-muted',
