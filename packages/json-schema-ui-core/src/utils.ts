@@ -30,3 +30,15 @@ export function generateDefaultUiSchema(schema: JsonSchema): UiSchema {
   }
   return ui;
 }
+
+export function getUiField(
+  uiSchema: UiSchema | undefined,
+  path: string[]
+): UiSchema | undefined {
+  let node: UiSchema | undefined = uiSchema;
+  for (const segment of path) {
+    if (node == null || typeof node !== 'object') return undefined;
+    node = node[segment] as UiSchema | undefined;
+  }
+  return node;
+}

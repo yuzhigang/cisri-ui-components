@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateDefaultUiSchema } from './utils';
+import { generateDefaultUiSchema, getUiField } from './utils';
 
 describe('generateDefaultUiSchema', () => {
   it('picks widget by primitive type', () => {
@@ -28,5 +28,25 @@ describe('generateDefaultUiSchema', () => {
   it('nests array items', () => {
     const ui = generateDefaultUiSchema({ type: 'array', items: { type: 'string' } });
     expect(ui.items).toEqual({ 'ui:widget': 'text' });
+  });
+});
+
+describe('getUiField', () => {
+  const ui = generateDefaultUiSchema({
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+      prefs: { type: 'object', properties: { theme: { type: 'string' } } },
+    },
+  });
+
+  it('returns nested node by path', () => {
+    expect(getUiField(ui, ['name'])).toEqual({ 'ui:widget': 'text' });
+    expect(getUiField(ui, ['prefs', 'theme'])).toEqual({ 'ui:widget': 'text' });
+  });
+
+  it('returns undefined for missing path', () => {
+    expect(getUiField(ui, ['missing'])).toBeUndefined();
+    expect(getUiField(undefined, ['name'])).toBeUndefined();
   });
 });
