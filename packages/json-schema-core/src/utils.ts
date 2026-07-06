@@ -13,6 +13,7 @@ export interface JsonSchema {
   properties?: Record<string, JsonSchema>;
   required?: string[];
   items?: JsonSchema;
+  enum?: unknown[];
 }
 
 export function generateSampleData(schema: JsonSchema): unknown {
