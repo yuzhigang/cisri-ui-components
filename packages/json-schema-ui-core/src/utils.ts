@@ -42,3 +42,14 @@ export function getUiField(
   }
   return node;
 }
+
+export function setUiField(
+  uiSchema: UiSchema,
+  path: string[],
+  patch: Partial<UiSchema>
+): UiSchema {
+  if (path.length === 0) return { ...uiSchema, ...patch };
+  const [head, ...rest] = path;
+  const child = (uiSchema[head] as UiSchema | undefined) ?? {};
+  return { ...uiSchema, [head]: setUiField(child, rest, patch) };
+}

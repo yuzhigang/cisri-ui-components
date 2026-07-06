@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateDefaultUiSchema, getUiField } from './utils';
+import { generateDefaultUiSchema, getUiField, setUiField } from './utils';
 
 describe('generateDefaultUiSchema', () => {
   it('picks widget by primitive type', () => {
@@ -48,5 +48,25 @@ describe('getUiField', () => {
   it('returns undefined for missing path', () => {
     expect(getUiField(ui, ['missing'])).toBeUndefined();
     expect(getUiField(undefined, ['name'])).toBeUndefined();
+  });
+});
+
+describe('setUiField', () => {
+  it('merges at root when path is empty', () => {
+    const ui = { 'ui:widget': 'text' as const };
+    expect(setUiField(ui, [], { 'ui:label': 'Name' })).toEqual({
+      'ui:widget': 'text',
+      'ui:label': 'Name',
+    });
+  });
+
+  it('sets a nested node immutably (original unchanged)', () => {
+    const ui = generateDefaultUiSchema({
+      type: 'object',
+      properties: { name: { type: 'string' } },
+    });
+    const next = setUiField(ui, ['name'], { 'ui:widget': 'textarea' });
+    expect((next.name as { 'ui:widget': string })['ui:widget']).toBe('textarea');
+    expect((ui.name as { 'ui:widget': string })['ui:widget']).toBe('text');
   });
 });
