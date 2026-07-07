@@ -78,3 +78,32 @@ describe('FieldConfigPanel object field', () => {
     expect(screen.getByRole('switch', { name: '隐藏字段' })).toBeInTheDocument();
   });
 });
+
+describe('FieldConfigPanel object ui:order drag', () => {
+  it('renders a drag handle per property for an object field', () => {
+    render(
+      <FieldConfigPanel
+        schema={{
+          type: 'object',
+          properties: { a: { type: 'string' }, b: { type: 'string' }, c: { type: 'string' } },
+        }}
+        uiField={{ 'ui:order': ['a', 'b', 'c'] }}
+        onPatch={vi.fn()}
+      />
+    );
+    expect(screen.getByLabelText('拖动字段 a')).toBeInTheDocument();
+    expect(screen.getByLabelText('拖动字段 b')).toBeInTheDocument();
+    expect(screen.getByLabelText('拖动字段 c')).toBeInTheDocument();
+  });
+
+  it('renders the 字段顺序 label for an object field', () => {
+    render(
+      <FieldConfigPanel
+        schema={{ type: 'object', properties: { a: { type: 'string' } } }}
+        uiField={{ 'ui:order': ['a'] }}
+        onPatch={vi.fn()}
+      />
+    );
+    expect(screen.getByText('字段顺序')).toBeInTheDocument();
+  });
+});

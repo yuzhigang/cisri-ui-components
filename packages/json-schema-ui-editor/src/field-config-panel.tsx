@@ -1,4 +1,22 @@
 import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
+import {
   Input,
   Label,
   Select,
@@ -8,9 +26,73 @@ import {
   SelectValue,
   Switch,
 } from '@cisri/shadcn';
+import { cn } from '@cisri/core';
 import type { JsonSchema } from '@cisri/json-schema-core';
 import type { UiSchema, UiWidget } from '@cisri/json-schema-ui-core';
-import { isPrimitiveField, widgetsForSchema } from './ui-editor-utils';
+import { isPrimitiveField, reorderOrder, widgetsForSchema } from './ui-editor-utils';
+
+interface SortableOrderItemProps {
+  name: string;
+}
+
+function SortableOrderItem({ name }: SortableOrderItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: name });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn(
+        'flex items-center gap-2 rounded border border-border px-2 py-1',
+        isDragging && 'opacity-50'
+      )}
+    >
+      <button
+        type="button"
+        className="flex h-6 w-6 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing"
+        aria-label={`拖动字段 ${name}`}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="pointer-events-none h-4 w-4" />
+      </button>
+      <span className="text-sm">{name}</span>
+    </div>
+  );
+}
+
+interface OrderListProps {
+  order: string[];
+  onReorder: (next: string[]) => void;
+}
+
+function OrderList({ order, onReorder }: OrderListProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    onReorder(reorderOrder(order, String(active.id), String(over.id)));
+  };
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      modifiers={[restrictToVerticalAxis]}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={order} strategy={verticalListSortingStrategy}>
+        <div className="space-y-1">
+          {order.map((name) => (
+            <SortableOrderItem key={name} name={name} />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+}
 
 export interface FieldConfigPanelProps {
   schema: JsonSchema;
@@ -20,6 +102,7 @@ export interface FieldConfigPanelProps {
 
 export function FieldConfigPanel({ schema, uiField, onPatch }: FieldConfigPanelProps) {
   const primitive = isPrimitiveField(schema);
+  const isOrderable = schema.type === 'object' && !!schema.properties;
   const widgets = widgetsForSchema(schema);
   const labelValue = typeof uiField?.['ui:label'] === 'string' ? uiField['ui:label'] : '';
   const hideLabel = uiField?.['ui:label'] === false;
@@ -124,6 +207,15 @@ export function FieldConfigPanel({ schema, uiField, onPatch }: FieldConfigPanelP
           onChange={(e) => onPatch({ 'ui:classNames': e.target.value || undefined })}
         />
       </div>
+      {isOrderable && (
+        <div className="space-y-1">
+          <Label>字段顺序</Label>
+          <OrderList
+            order={(uiField?.['ui:order'] as string[] | undefined) ?? Object.keys(schema.properties!)}
+            onReorder={(next) => onPatch({ 'ui:order': next })}
+          />
+        </div>
+      )}
     </div>
   );
 }
