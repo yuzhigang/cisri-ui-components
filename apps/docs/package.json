@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cisri/db-schema-editor": "workspace:*",
+    "@cisri/json-schema-form": "workspace:*",
     "@cisri/json-schema-editor": "workspace:*",
     "@cisri/json-schema-selector": "workspace:*",
     "@radix-ui/react-collapsible": "^1.0.0",
