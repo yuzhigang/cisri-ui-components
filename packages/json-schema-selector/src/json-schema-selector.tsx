@@ -3,8 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { cn } from '@cisri/core';
 import type { JsonSchema } from '@cisri/json-schema-core';
 import { generateSampleData } from '@cisri/json-schema-core';
-import { Button } from './ui/button';
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -12,11 +12,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from './ui/dialog';
-import { Input } from './ui/input';
-import { ScrollArea } from './ui/scroll-area';
-import { Separator } from './ui/separator';
-import { Skeleton } from './ui/skeleton';
+  Input,
+  ScrollArea,
+  Separator,
+  Skeleton,
+} from '@cisri/shadcn';
 import { Search } from 'lucide-react';
 
 export interface JsonSchemaEntry {

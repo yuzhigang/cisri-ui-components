@@ -12,6 +12,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@cisri/core': path.resolve(__dirname, '../core/src'),
+      '@cisri/shadcn': path.resolve(__dirname, '../shadcn/src'),
     },
   },
 });

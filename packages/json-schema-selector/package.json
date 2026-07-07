@@ -26,29 +26,16 @@
   },
   "dependencies": {
     "@cisri/core": "workspace:*",
-    "@cisri/json-schema-core": "workspace:*"
+    "@cisri/json-schema-core": "workspace:*",
+    "@cisri/shadcn": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
-    "@radix-ui/react-dialog": "^1.0.0",
-    "@radix-ui/react-scroll-area": "^1.0.0",
-    "@radix-ui/react-separator": "^1.0.0",
-    "@radix-ui/react-slot": "^1.0.0",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "lucide-react": "^0.300.0",
-    "tailwind-merge": "^2.0.0"
+    "lucide-react": "^0.300.0"
   },
   "peerDependenciesMeta": {
-    "@radix-ui/react-dialog": { "optional": false },
-    "@radix-ui/react-scroll-area": { "optional": false },
-    "@radix-ui/react-separator": { "optional": false },
-    "@radix-ui/react-slot": { "optional": false },
-    "class-variance-authority": { "optional": false },
-    "clsx": { "optional": false },
-    "lucide-react": { "optional": false },
-    "tailwind-merge": { "optional": false }
+    "lucide-react": { "optional": false }
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.5",

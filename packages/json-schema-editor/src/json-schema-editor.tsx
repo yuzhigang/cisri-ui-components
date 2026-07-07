@@ -1,23 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button } from './ui/button';
-import { Checkbox } from './ui/checkbox';
-import { Input } from './ui/input';
 import {
+  Button,
+  Checkbox,
+  Input,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from './ui/table';
-import { Textarea } from './ui/textarea';
+  Textarea,
+} from '@cisri/shadcn';
 import { cn } from '@cisri/core';
 import { ChevronDown, Minus, Plus, Redo2, Trash2, Undo2 } from 'lucide-react';
 import type { JsonSchema, JsonSchemaType } from '@cisri/json-schema-core';
