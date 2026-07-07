@@ -239,6 +239,21 @@ describe('JsonSchemaForm renderFieldActions', () => {
     expect(screen.getByTestId('cfg-name')).toBeInTheDocument();
     expect(screen.getByTestId('cfg-age')).toBeInTheDocument();
   });
+
+  it('renders renderFieldActions for an object fieldset with the object path', () => {
+    render(
+      <JsonSchemaForm
+        schema={{
+          type: 'object',
+          properties: { prefs: { type: 'object', properties: { theme: { type: 'string' } } } },
+        }}
+        value={{ prefs: { theme: '' } }}
+        onChange={vi.fn()}
+        renderFieldActions={({ path }) => <span data-testid={`cfg-${path.join('.')}`}>cfg</span>}
+      />
+    );
+    expect(screen.getByTestId('cfg-prefs')).toBeInTheDocument();
+  });
 });
 
 describe('JsonSchemaForm validation', () => {

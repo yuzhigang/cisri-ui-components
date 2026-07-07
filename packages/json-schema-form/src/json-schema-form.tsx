@@ -89,9 +89,11 @@ function FieldRenderer({
     const order = (uiSchema?.['ui:order'] as string[] | undefined) ?? Object.keys(schema.properties);
     const requiredSet = new Set(schema.required ?? []);
     const obj = (value ?? {}) as Record<string, unknown>;
+    const actions = renderFieldActions?.({ path, uiSchema, schema });
     return (
       <fieldset className={cn('space-y-3', classNames)}>
         {labelText && <legend className="text-sm font-medium">{labelText}</legend>}
+        {actions && <div className="mt-1">{actions}</div>}
         {order.map((name) => (
           <FieldRenderer
             key={name}
@@ -113,9 +115,11 @@ function FieldRenderer({
   if (schema.type === 'array' && schema.items) {
     const arr = Array.isArray(value) ? (value as unknown[]) : [];
     const itemUi = uiSchema?.items as UiSchema | undefined;
+    const actions = renderFieldActions?.({ path, uiSchema, schema });
     return (
       <fieldset className={cn('space-y-2', classNames)}>
         {labelText && <legend className="text-sm font-medium">{labelText}</legend>}
+        {actions && <div className="mt-1">{actions}</div>}
         {arr.map((item, i) => (
           <div key={i} className="flex items-start gap-2">
             <FieldRenderer
