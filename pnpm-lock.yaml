@@ -239,7 +239,19 @@ importers:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@20.19.43)(jsdom@24.1.3)
 
-  packages/json-editor:
+  packages/json-schema-core:
+    devDependencies:
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
+      vite:
+        specifier: ^5.2.11
+        version: 5.4.21(@types/node@20.19.43)
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@20.19.43)(jsdom@24.1.3)
+
+  packages/json-schema-editor:
     dependencies:
       '@cisri/core':
         specifier: workspace:*
@@ -291,19 +303,7 @@ importers:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@20.19.43)(jsdom@24.1.3)
 
-  packages/json-schema-core:
-    devDependencies:
-      typescript:
-        specifier: ^5.4.5
-        version: 5.9.3
-      vite:
-        specifier: ^5.2.11
-        version: 5.4.21(@types/node@20.19.43)
-      vitest:
-        specifier: ^1.6.0
-        version: 1.6.1(@types/node@20.19.43)(jsdom@24.1.3)
-
-  packages/json-schema-editor:
+  packages/json-schema-form:
     dependencies:
       '@cisri/core':
         specifier: workspace:*
@@ -311,6 +311,9 @@ importers:
       '@cisri/json-schema-core':
         specifier: workspace:*
         version: link:../json-schema-core
+      '@cisri/json-schema-ui-core':
+        specifier: workspace:*
+        version: link:../json-schema-ui-core
       '@cisri/shadcn':
         specifier: workspace:*
         version: link:../shadcn
@@ -434,6 +437,9 @@ importers:
       '@radix-ui/react-dialog':
         specifier: ^1.0.0
         version: 1.1.18(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@radix-ui/react-label':
+        specifier: ^2.0.0
+        version: 2.1.10(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-scroll-area':
         specifier: ^1.0.0
         version: 1.2.13(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
