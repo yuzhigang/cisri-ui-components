@@ -3,6 +3,8 @@ import { JsonSchemaEditor, JsonSchema } from '@cisri/json-schema-editor';
 import { JsonSchemaSelector, JsonSchemaEntry } from '@cisri/json-schema-selector';
 import { DbSchemaEditor, type DbTable } from '@cisri/db-schema-editor';
 import { JsonSchemaForm } from '@cisri/json-schema-form';
+import { JsonSchemaUiEditor } from '@cisri/json-schema-ui-editor';
+import { generateDefaultUiSchema } from '@cisri/json-schema-ui-core';
 
 const initialSchema: JsonSchema = {
   type: 'object' as const,
@@ -56,11 +58,24 @@ const initialTable: DbTable = {
   ],
 };
 
+const uiEditorSchema: JsonSchema = {
+  type: 'object' as const,
+  title: 'User',
+  properties: {
+    name: { type: 'string' as const, title: 'Name' },
+    age: { type: 'integer' as const, title: 'Age' },
+    role: { type: 'string' as const, title: 'Role', enum: ['admin', 'user', 'guest'] },
+    active: { type: 'boolean' as const, title: 'Active' },
+  },
+  required: ['name'],
+};
+
 export function DemoSection() {
   const [schema, setSchema] = useState(initialSchema);
   const [selectedEntry, setSelectedEntry] = useState<JsonSchemaEntry | null>(null);
   const [table, setTable] = useState(initialTable);
   const [formData, setFormData] = useState({ name: '', age: 0, active: false });
+  const [uiSchema, setUiSchema] = useState(() => generateDefaultUiSchema(uiEditorSchema));
 
   return (
     <div className="space-y-10">
@@ -153,6 +168,30 @@ export function DemoSection() {
         <pre className="max-h-96 overflow-auto rounded-md bg-muted p-4 text-xs">
           <code>{JSON.stringify(formData, null, 2)}</code>
         </pre>
+      </div>
+
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold tracking-tight">JSON Schema UI 编辑器</h2>
+        <p className="text-muted-foreground">
+          在默认生成的表单上逐字段配置 UI（widget/label/help/placeholder/hidden/disabled/readonly/classNames），对象字段可拖曳调整顺序。产出 uiSchema。
+        </p>
+
+        <div className="rounded-lg border border-border bg-card p-6">
+          <JsonSchemaUiEditor
+            schema={uiEditorSchema}
+            uiSchema={uiSchema}
+            onChange={setUiSchema}
+            formData={{ name: '', age: 0, role: 'user', active: false }}
+            className="w-full"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-semibold">当前 uiSchema</h3>
+          <pre className="max-h-96 overflow-auto rounded-md bg-muted p-4 text-xs">
+            <code>{JSON.stringify(uiSchema, null, 2)}</code>
+          </pre>
+        </div>
       </div>
     </div>
   );

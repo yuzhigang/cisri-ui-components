@@ -89,12 +89,21 @@ importers:
       '@cisri/json-schema-selector':
         specifier: workspace:*
         version: link:../../packages/json-schema-selector
+      '@cisri/json-schema-ui-core':
+        specifier: workspace:*
+        version: link:../../packages/json-schema-ui-core
+      '@cisri/json-schema-ui-editor':
+        specifier: workspace:*
+        version: link:../../packages/json-schema-ui-editor
       '@radix-ui/react-collapsible':
         specifier: ^1.0.0
         version: 1.1.14(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-label':
         specifier: ^2.0.0
         version: 2.1.10(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@radix-ui/react-popover':
+        specifier: ^1.0.0
+        version: 1.1.18(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-select':
         specifier: ^2.0.0
         version: 2.3.1(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
