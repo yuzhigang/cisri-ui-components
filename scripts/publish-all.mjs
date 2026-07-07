@@ -37,6 +37,19 @@ try {
     const pkgFile = resolve(dir, 'package.json');
     const pkg = JSON.parse(readFileSync(pkgFile, 'utf8'));
 
+    // Skip if this version is already on the registry (idempotent publish).
+    let alreadyPublished = false;
+    try {
+      execSync(`npm view ${pkg.name}@${pkg.version}`, { stdio: 'ignore' });
+      alreadyPublished = true;
+    } catch {
+      alreadyPublished = false;
+    }
+    if (alreadyPublished) {
+      console.log(`\n=== Skipping ${pkg.name}@${pkg.version} (already published) ===`);
+      continue;
+    }
+
     console.log(`\n=== Publishing ${pkg.name}@${pkg.version} ===`);
     const cmd = dryRun
       ? 'pnpm publish --no-git-checks --dry-run'
