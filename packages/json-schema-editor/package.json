@@ -1,6 +1,6 @@
 {
   "name": "@cisri/json-schema-editor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "JSON Schema editor business component based on shadcn/ui",
   "type": "module",
   "main": "./dist/index.js",
