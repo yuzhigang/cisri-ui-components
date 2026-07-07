@@ -26,11 +26,11 @@ function cleanupBackups() {
 }
 
 try {
-  console.log('=== Syncing workspace dependencies ===');
-  execSync('node scripts/sync-peer-deps.mjs', { stdio: 'inherit' });
-
-  console.log('\n=== Building all packages ===');
+  console.log('=== Building all packages ===');
   execSync('node scripts/build-all.mjs', { stdio: 'inherit' });
+
+  console.log('\n=== Syncing workspace dependencies ===');
+  execSync('node scripts/sync-peer-deps.mjs', { stdio: 'inherit' });
 
   for (const name of ordered) {
     const dir = resolve(packagesDir, name);
@@ -52,8 +52,8 @@ try {
 
     console.log(`\n=== Publishing ${pkg.name}@${pkg.version} ===`);
     const cmd = dryRun
-      ? 'pnpm publish --no-git-checks --dry-run'
-      : 'pnpm publish --no-git-checks --access public';
+      ? 'pnpm publish --no-git-checks --ignore-scripts --dry-run'
+      : 'pnpm publish --no-git-checks --ignore-scripts --access public';
     execSync(cmd, { cwd: dir, stdio: 'inherit' });
   }
 } finally {
