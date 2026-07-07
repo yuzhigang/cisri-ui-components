@@ -1,5 +1,15 @@
 import type { ReactNode } from 'react';
-import { Input, Label, Textarea } from '@cisri/shadcn';
+import {
+  Checkbox,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from '@cisri/shadcn';
 import { cn } from '@cisri/core';
 import type { JsonSchema } from '@cisri/json-schema-core';
 import {
@@ -230,8 +240,60 @@ function renderPrimitive(
           onChange={(e) => onChange(Number(e.target.value))}
         />
       );
+    case 'checkbox':
+      return (
+        <Checkbox
+          id={id}
+          checked={value === true}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          onCheckedChange={(c) => onChange(c === true)}
+        />
+      );
+    case 'radio': {
+      const options: unknown[] = _schema.enum ? (_schema.enum as unknown[]) : [false, true];
+      return (
+        <div className="space-y-1">
+          {options.map((opt) => (
+            <label key={String(opt)} className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name={id}
+                checked={value === opt}
+                disabled={disabled}
+                onChange={() => onChange(opt)}
+              />
+              {_schema.enum ? String(opt) : opt ? 'true' : 'false'}
+            </label>
+          ))}
+        </div>
+      );
+    }
+    case 'select': {
+      const options = (_schema.enum ?? []) as unknown[];
+      return (
+        <Select
+          value={value != null ? String(value) : undefined}
+          disabled={disabled}
+          onValueChange={(v) => {
+            const opt = options.find((o) => String(o) === v);
+            onChange(opt);
+          }}
+        >
+          <SelectTrigger id={id}>
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((opt) => (
+              <SelectItem key={String(opt)} value={String(opt)}>
+                {String(opt)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
     default:
-      // checkbox / radio / select handled in Task 4
       return (
         <Input
           id={id}

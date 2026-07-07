@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { JsonSchemaForm } from './json-schema-form';
 
 describe('JsonSchemaForm primitives', () => {
@@ -64,5 +65,49 @@ describe('JsonSchemaForm primitives', () => {
       />
     );
     expect(screen.getByLabelText('Full Name')).toBeInTheDocument();
+  });
+});
+
+describe('JsonSchemaForm boolean + enum', () => {
+  it('renders a checkbox for boolean and toggles true/false', () => {
+    const onChange = vi.fn();
+    render(
+      <JsonSchemaForm
+        schema={{ type: 'object', properties: { active: { type: 'boolean' } } }}
+        value={{ active: false }}
+        onChange={onChange}
+      />
+    );
+    const cb = screen.getByRole('checkbox', { name: 'active' });
+    fireEvent.click(cb);
+    expect(onChange.mock.calls.at(-1)?.[0]).toEqual({ active: true });
+  });
+
+  it('renders a select for enum and changes value', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <JsonSchemaForm
+        schema={{ type: 'object', properties: { color: { type: 'string', enum: ['red', 'green', 'blue'] } } }}
+        value={{ color: 'red' }}
+        onChange={onChange}
+      />
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'green' }));
+    expect(onChange.mock.calls.at(-1)?.[0]).toEqual({ color: 'green' });
+  });
+
+  it('renders radio buttons for a boolean with ui:widget radio', () => {
+    render(
+      <JsonSchemaForm
+        schema={{ type: 'object', properties: { active: { type: 'boolean' } } }}
+        uiSchema={{ active: { 'ui:widget': 'radio' } }}
+        value={{ active: false }}
+        onChange={vi.fn()}
+      />
+    );
+    expect(screen.getByRole('radio', { name: /true/i })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /false/i })).toBeInTheDocument();
   });
 });
