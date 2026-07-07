@@ -83,6 +83,9 @@ importers:
       '@cisri/json-schema-editor':
         specifier: workspace:*
         version: link:../../packages/json-schema-editor
+      '@cisri/json-schema-form':
+        specifier: workspace:*
+        version: link:../../packages/json-schema-form
       '@cisri/json-schema-selector':
         specifier: workspace:*
         version: link:../../packages/json-schema-selector

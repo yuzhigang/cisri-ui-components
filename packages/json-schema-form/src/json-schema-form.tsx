@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import {
   Checkbox,
   Input,
@@ -17,6 +17,7 @@ import {
   type UiSchema,
   type UiWidget,
 } from '@cisri/json-schema-ui-core';
+import { validateForm } from './form-utils';
 
 export interface JsonSchemaFormProps {
   schema: JsonSchema;
@@ -311,11 +312,15 @@ export function JsonSchemaForm({
   uiSchema,
   value,
   onChange,
+  onError,
   readOnly,
   className,
   renderFieldActions,
 }: JsonSchemaFormProps) {
   const effectiveUi = uiSchema ?? generateDefaultUiSchema(schema);
+  useEffect(() => {
+    onError?.(validateForm(schema, value));
+  }, [schema, value, onError]);
   return (
     <div className={cn('space-y-3', className)}>
       <FieldRenderer

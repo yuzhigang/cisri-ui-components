@@ -240,3 +240,31 @@ describe('JsonSchemaForm renderFieldActions', () => {
     expect(screen.getByTestId('cfg-age')).toBeInTheDocument();
   });
 });
+
+describe('JsonSchemaForm validation', () => {
+  it('calls onError with required-field errors', () => {
+    const onError = vi.fn();
+    render(
+      <JsonSchemaForm
+        schema={{ type: 'object', properties: { name: { type: 'string' } }, required: ['name'] }}
+        value={{}}
+        onChange={vi.fn()}
+        onError={onError}
+      />
+    );
+    expect(onError.mock.calls.at(-1)?.[0]).toEqual(['name is required']);
+  });
+
+  it('calls onError with empty array when valid', () => {
+    const onError = vi.fn();
+    render(
+      <JsonSchemaForm
+        schema={{ type: 'object', properties: { name: { type: 'string' } }, required: ['name'] }}
+        value={{ name: 'x' }}
+        onChange={vi.fn()}
+        onError={onError}
+      />
+    );
+    expect(onError.mock.calls.at(-1)?.[0]).toEqual([]);
+  });
+});
